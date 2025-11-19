@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Class Exit Poll</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #0f172a;
+      color: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      padding: 1.5rem;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      text-align: center;
+      font-size: 1.8rem;
+    }
+
+    p.subtitle {
+      text-align: center;
+      margin: 0 0 1.5rem;
+      color: #cbd5f5;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 24px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.7);
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 0.95rem;
+      margin-bottom: 0.9rem;
+    }
+
+    input::placeholder {
+      color: #6b7280;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 0.7rem 1.3rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    button.primary {
+      background: #22c55e;
+      color: #022c22;
+    }
+
+    button.primary:hover {
+      background: #16a34a;
+    }
+
+    button.secondary {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    button.secondary:hover {
+      background: #1f2937;
+    }
+
+    .center-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    /* Poll screen */
+
+    .poll-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.75rem;
+    }
+
+    .poll-class {
+      font-size: 0.9rem;
+      color: #cbd5f5;
+    }
+
+    .poll-prompt {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .circle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      justify-items: center;
+      align-items: center;
+      margin: 1.25rem 0 0.75rem;
+    }
+
+    @media (max-width: 700px) {
+      .circle-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 1.3rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0.75rem;
+      }
+      .circle-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+      }
+    }
+
+    .circle-btn {
+      border-radius: 50%;
+      border: none;
+      width: 120px;
+      height: 120px;
+      max-width: 35vw;
+      max-height: 35vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #020617;
+      font-weight: 700;
+      font-size: 0.95rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, scale 0.08s ease;
+      padding: 0.5rem;
+    }
+
+    .circle-btn span.small-text {
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .circle-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      scale: 0.97;
+    }
+
+    .circle-all {
+      background: radial-gradient(circle at 30% 20%, #bbf7d0, #22c55e);
+    }
+    .circle-most {
+      background: radial-gradient(circle at 30% 20%, #fef9c3, #eab308);
+    }
+    .circle-some {
+      background: radial-gradient(circle at 30% 20%, #fee2e2, #f97316);
+    }
+    .circle-none {
+      background: radial-gradient(circle at 30% 20%, #fecaca, #ef4444);
+    }
+
+    .teacher-end {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      padding-inline: 1rem;
+      padding-block: 0.45rem;
+    }
+
+    .teacher-end span {
+      font-weight: 500;
+    }
+
+    .teacher-end strong {
+      font-weight: 700;
+    }
+
+    .teacher-end:hover {
+      opacity: 1;
+    }
+
+    .teacher-end-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+
+    /* Thanks overlay */
+    .thanks-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.85);
+      z-index: 20;
+    }
+
+    .thanks-overlay.active {
+      display: flex;
+    }
+
+    .thanks-bubble {
+      background: #f9fafb;
+      color: #0f172a;
+      padding: 1.5rem 2rem;
+      border-radius: 999px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Summary screen */
+    .summary-heading {
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .summary-sub {
+      text-align: center;
+      margin: 0;
+      color: #cbd5f5;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #1f2937;
+      padding: 0.4rem 0.2rem;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    tfoot td {
+      font-weight: 700;
+    }
+
+    .notice {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <!-- THANKS OVERLAY -->
+  <div id="thanksOverlay" class="thanks-overlay">
+    <div class="thanks-bubble">Thank you! 🌟</div>
+  </div>
+
+  <!-- SETUP SCREEN (TEACHER) -->
+  <div id="setupScreen" class="screen active">
+    <div class="card">
+      <h1>Class Exit Poll</h1>
+      <p class="subtitle">
+        Teacher: enter the class, add an email for results, then tap “Start poll”.
+      </p>
+      <label for="classInput">Class / Group name</label>
+      <input
+        type="text"
+        id="classInput"
+        placeholder="e.g. 7X/CS1"
+        autocomplete="off"
+      />
+
+      <label for="teacherEmail">Send results to (email)</label>
+      <input
+        type="email"
+        id="teacherEmail"
+        placeholder="e.g. your.name@school.co.uk"
+        autocomplete="off"
+      />
+
+      <div class="center-row">
+        <button id="startPollBtn" class="primary">Start poll</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POLL SCREEN (PUPILS) -->
+  <div id="pollScreen" class="screen">
+    <div class="card">
+      <div class="poll-header">
+        <div class="poll-class" id="pollClassLabel"></div>
+      </div>
+      <div class="poll-prompt">
+        <strong>How much of your work have you finished today?</strong>
+        <br />
+        <span style="font-size: 0.95rem; color: #cbd5f5;"
+          >Tap one circle and hand it to the next person.</span
+        >
+      </div>
+
+      <div class="circle-grid">
+        <button
+          class="circle-btn circle-all"
+          data-choice="all"
+          type="button"
+        >
+          <span>All</span>
+          <span class="small-text">I finished everything</span>
+        </button>
+        <button
+          class="circle-btn circle-most"
+          data-choice="most"
+          type="button"
+        >
+          <span>Most</span>
+          <span class="small-text">Nearly all done</span>
+        </button>
+        <button
+          class="circle-btn circle-some"
+          data-choice="some"
+          type="button"
+        >
+          <span>Some</span>
+          <span class="small-text">I did a bit</span>
+        </button>
+        <button
+          class="circle-btn circle-none"
+          data-choice="none"
+          type="button"
+        >
+          <span>None</span>
+          <span class="small-text">I didn’t start</span>
+        </button>
+      </div>
+
+      <div class="teacher-end-wrapper">
+        <button id="endPollBtn" class="secondary teacher-end" type="button">
+          <span>Teacher:</span> <strong>End poll</strong>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY SCREEN (TEACHER) -->
+  <div id="summaryScreen" class="screen">
+    <div class="card">
+      <h2 class="summary-heading">Lesson summary</h2>
+      <p class="summary-sub" id="summaryClassInfo"></p>
+      <p class="summary-sub" id="summaryCountInfo"></p>
+
+      <table id="summaryTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Choice</th>
+            <th>Count</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+        <tfoot>
+          <tr>
+            <td>Total responses</td>
+            <td id="totalCell"></td>
+            <td id="engagementCell"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p class="notice">
+        Engagement score uses: All = 1.0, Most = 0.75, Some = 0.5, None = 0.
+      </p>
+
+      <div class="center-row" style="margin-top: 1rem;">
+        <button id="emailResultsBtn" class="primary" type="button">
+          Email results
+        </button>
+        <button id="newPollBtn" class="secondary" type="button">
+          New class / poll
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "exitPollResponses_v2";
+    const SETTINGS_KEY = "exitPollSettings_v1";
+
+    let currentClassName = null;
+    let currentTeacherEmail = "";
+
+    // --- Storage helpers (responses) ---
+    function loadResponses() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Failed to load responses", e);
+        return [];
+      }
+    }
+
+    function saveResponses(responses) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(responses));
+    }
+
+    // --- Storage helpers (settings) ---
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        if (!raw) return {};
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Failed to load settings", e);
+        return {};
+      }
+    }
+
+    function saveSettings(settings) {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    // --- Screen management ---
+    const setupScreen = document.getElementById("setupScreen");
+    const pollScreen = document.getElementById("pollScreen");
+    const summaryScreen = document.getElementById("summaryScreen");
+    const pollClassLabel = document.getElementById("pollClassLabel");
+    const teacherEmailInput = document.getElementById("teacherEmail");
+
+    function showScreen(screenName) {
+      setupScreen.classList.remove("active");
+      pollScreen.classList.remove("active");
+      summaryScreen.classList.remove("active");
+
+      if (screenName === "setup") setupScreen.classList.add("active");
+      if (screenName === "poll") pollScreen.classList.add("active");
+      if (screenName === "summary") summaryScreen.classList.add("active");
+    }
+
+    // --- Prefill email from previous use, if any ---
+    (function initSettings() {
+      const settings = loadSettings();
+      if (settings.teacherEmail && teacherEmailInput) {
+        teacherEmailInput.value = settings.teacherEmail;
+      }
+    })();
+
+    // --- Thanks overlay ---
+    const thanksOverlay = document.getElementById("thanksOverlay");
+    let thanksTimer = null;
+
+    function showThanks() {
+      if (thanksTimer) {
+        clearTimeout(thanksTimer);
+      }
+      thanksOverlay.classList.add("active");
+      thanksTimer = setTimeout(() => {
+        thanksOverlay.classList.remove("active");
+      }, 1000); // 1.0 seconds
+    }
+
+    // --- Start poll ---
+    document.getElementById("startPollBtn").addEventListener("click", () => {
+      const classInput = document.getElementById("classInput");
+      const name = classInput.value.trim();
+      const email = teacherEmailInput.value.trim();
+
+      if (!name) {
+        alert("Please enter a class / group name.");
+        return;
+      }
+
+      if (!email) {
+        alert("Please enter the email address to send results to.");
+        return;
+      }
+
+      currentClassName = name;
+      currentTeacherEmail = email;
+
+      // remember email for next time on this device
+      saveSettings({ teacherEmail: email });
+
+      pollClassLabel.textContent = "Class: " + name;
+      showScreen("poll");
+    });
+
+    // --- Record a response ---
+    function recordResponse(choiceKey) {
+      if (!currentClassName) return;
+
+      const responses = loadResponses();
+      responses.push({
+        timestamp: new Date().toISOString(),
+        className: currentClassName,
+        choice: choiceKey,
+      });
+      saveResponses(responses);
+      showThanks();
+    }
+
+    document.querySelectorAll(".circle-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const choice = btn.dataset.choice;
+        recordResponse(choice);
+      });
+    });
+
+    // --- End poll (teacher) ---
+    document.getElementById("endPollBtn").addEventListener("click", () => {
+      if (!currentClassName) return;
+
+      const responses = loadResponses().filter(
+        (r) => r.className === currentClassName
+      );
+
+      updateSummary(currentClassName, responses);
+      showScreen("summary");
+    });
+
+    // --- Summary + engagement ---
+    function updateSummary(className, responses) {
+      const summaryClassInfo = document.getElementById("summaryClassInfo");
+      const summaryCountInfo = document.getElementById("summaryCountInfo");
+      const summaryTable = document.getElementById("summaryTable");
+      const summaryBody = document.getElementById("summaryBody");
+      const totalCell = document.getElementById("totalCell");
+      const engagementCell = document.getElementById("engagementCell");
+
+      if (responses.length === 0) {
+        summaryClassInfo.textContent = "Class: " + className;
+        summaryCountInfo.textContent = "No responses recorded for this class.";
+        summaryTable.style.display = "none";
+        totalCell.textContent = "";
+        engagementCell.textContent = "";
+        return;
+      }
+
+      summaryClassInfo.textContent = "Class: " + className;
+      summaryCountInfo.textContent =
+        "Total responses: " + responses.length.toString();
+
+      const counts = { all: 0, most: 0, some: 0, none: 0 };
+      responses.forEach((r) => {
+        if (counts[r.choice] !== undefined) counts[r.choice]++;
+      });
+
+      const total = responses.length;
+      const weights = { all: 1.0, most: 0.75, some: 0.5, none: 0 };
+      let scoreSum = 0;
+      responses.forEach((r) => {
+        scoreSum += weights[r.choice] ?? 0;
+      });
+      const engagement = total > 0 ? scoreSum / total : 0;
+
+      const labels = {
+        all: "All of my work",
+        most: "Most of my work",
+        some: "Some of my work",
+        none: "None of my work",
+      };
+
+      summaryBody.innerHTML = "";
+      ["all", "most", "some", "none"].forEach((key) => {
+        const count = counts[key];
+        const pct = total > 0 ? ((count / total) * 100).toFixed(1) + "%" : "0%";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${labels[key]}</td>
+          <td>${count}</td>
+          <td>${pct}</td>
+        `;
+        summaryBody.appendChild(tr);
+      });
+
+      totalCell.textContent = total.toString();
+      engagementCell.textContent = (engagement * 100).toFixed(1) + "% engagement";
+      summaryTable.style.display = "table";
+    }
+
+    // --- Email results for this class (summary only) ---
+document
+  .getElementById("emailResultsBtn")
+  .addEventListener("click", () => {
+    if (!currentClassName) return;
+
+    if (!currentTeacherEmail) {
+      alert(
+        "No email address stored for this poll. Please go back and start a new poll with an email address."
+      );
+      return;
+    }
+
+    const allResponses = loadResponses();
+    const classResponses = allResponses.filter(
+      (r) => r.className === currentClassName
+    );
+    if (classResponses.length === 0) {
+      alert("No responses to email for this class.");
+      return;
+    }
+
+    // Work out counts, percentages and engagement
+    const counts = { all: 0, most: 0, some: 0, none: 0 };
+    classResponses.forEach((r) => {
+      if (counts[r.choice] !== undefined) counts[r.choice]++;
+    });
+
+    const total = classResponses.length;
+    const weights = { all: 1.0, most: 0.75, some: 0.5, none: 0 };
+    let scoreSum = 0;
+    classResponses.forEach((r) => {
+      scoreSum += weights[r.choice] ?? 0;
+    });
+    const engagement = total > 0 ? scoreSum / total : 0;
+
+    const labels = {
+      all: "All of my work",
+      most: "Most of my work",
+      some: "Some of my work",
+      none: "None of my work",
+    };
+
+    // Build a readable summary for the email body
+    let bodyText = `Exit poll results - ${currentClassName}\n\n`;
+    bodyText += `Total responses: ${total}\n`;
+    bodyText += `Overall engagement: ${(engagement * 100).toFixed(1)}%\n\n`;
+    bodyText += "Breakdown:\n";
+
+    ["all", "most", "some", "none"].forEach((key) => {
+      const count = counts[key];
+      const pct =
+        total > 0 ? ((count / total) * 100).toFixed(1) + "%" : "0%";
+      bodyText += `- ${labels[key]}: ${count} (${pct})\n`;
+    });
+
+    const subject = encodeURIComponent(
+      "Exit poll results - " + currentClassName
+    );
+    const body = encodeURIComponent(bodyText);
+    const toAddress = currentTeacherEmail;
+
+    const gmailUrl =
+      "https://mail.google.com/mail/?view=cm&fs=1" +
+      "&to=" + encodeURIComponent(toAddress) +
+      "&su=" + subject +
+      "&body=" + body;
+
+    window.open(gmailUrl, "_blank");
+  });
+
+    // --- New poll / new class ---
+    document.getElementById("newPollBtn").addEventListener("click", () => {
+      currentClassName = null;
+      // keep email prefilled from settings; just clear class
+      document.getElementById("classInput").value = "";
+      showScreen("setup");
+    });
+  </script>
+</body>
+</html>
