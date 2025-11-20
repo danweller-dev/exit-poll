@@ -178,3 +178,11 @@ https://<your-username>.github.io/<your-repo-name>/
 - 📥 CSV exports  
 - 📱 PWA and mobile app wrappers  
 - 🎨 Custom themes for different age groups  
+
+## Changelog
+
+### v1.1
+- Larger touch-friendly circles for tablet mode
+- Better spacing and layout improvements
+- “End poll” button moved to bottom center
+- Added “Copy summary” fallback for non-Gmail users
