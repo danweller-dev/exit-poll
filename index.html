@@ -137,14 +137,14 @@
       font-size: 1.1rem;
     }
 
-    .circle-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1rem;
-      justify-items: center;
-      align-items: center;
-      margin: 1.25rem 0 0.75rem;
-    }
+.circle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;                  /* increased spacing between circles */
+  justify-items: center;
+  align-items: center;
+  margin: 1.75rem 0 1rem;       /* more space above and below */
+}
 
     @media (max-width: 700px) {
       .circle-grid {
@@ -163,25 +163,25 @@
       }
     }
 
-    .circle-btn {
-      border-radius: 50%;
-      border: none;
-      width: 120px;
-      height: 120px;
-      max-width: 35vw;
-      max-height: 35vw;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      color: #020617;
-      font-weight: 700;
-      font-size: 0.95rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-      transition: transform 0.08s ease, box-shadow 0.08s ease, scale 0.08s ease;
-      padding: 0.5rem;
-    }
+.circle-btn {
+  border-radius: 50%;
+  border: none;
+  width: 160px;        /* was 120px */
+  height: 160px;       /* was 120px */
+  max-width: 40vw;     /* was 35vw */
+  max-height: 40vw;    /* was 35vw */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #020617;
+  font-weight: 700;
+  font-size: 1rem;     /* slightly bigger text */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, scale 0.08s ease;
+  padding: 0.75rem;    /* more room for text inside */
+}
 
     .circle-btn span.small-text {
       font-size: 0.8rem;
@@ -228,8 +228,8 @@
 
     .teacher-end-wrapper {
       display: flex;
-      justify-content: flex-end;
-      margin-top: 0.5rem;
+      justify-content: center; /* centre horizonally */
+      margin-top: 2.5rem;  /* move it further away from circles */
     }
 
     /* Thanks overlay */
@@ -421,14 +421,16 @@
         Engagement score uses: All = 1.0, Most = 0.75, Some = 0.5, None = 0.
       </p>
 
-      <div class="center-row" style="margin-top: 1rem;">
-        <button id="emailResultsBtn" class="primary" type="button">
-          Email results
-        </button>
-        <button id="newPollBtn" class="secondary" type="button">
-          New class / poll
-        </button>
-      </div>
+    <div class="center-row" style="margin-top: 1rem; gap: 0.5rem;">
+      <button id="emailResultsBtn" class="primary" type="button">
+       Email results
+      </button>
+      <button id="copySummaryBtn" class="secondary" type="button">
+        Copy summary
+      </button>
+      <button id="newPollBtn" class="secondary" type="button">
+        New class / poll
+      </button>
     </div>
   </div>
 
@@ -634,6 +636,70 @@ document
   .getElementById("emailResultsBtn")
   .addEventListener("click", () => {
     if (!currentClassName) return;
+
+document
+  .getElementById("copySummaryBtn")
+  .addEventListener("click", () => {
+    if (!currentClassName) return;
+
+    const allResponses = loadResponses();
+    const classResponses = allResponses.filter(
+      (r) => r.className === currentClassName
+    );
+
+    if (classResponses.length === 0) {
+      alert("No responses to copy for this class.");
+      return;
+    }
+
+    // Build a readable summary (same idea as the email body)
+    const counts = { all: 0, most: 0, some: 0, none: 0 };
+    classResponses.forEach((r) => {
+      if (counts[r.choice] !== undefined) counts[r.choice]++;
+    });
+
+    const total = classResponses.length;
+    const weights = { all: 1.0, most: 0.75, some: 0.5, none: 0 };
+    let scoreSum = 0;
+    classResponses.forEach((r) => {
+      scoreSum += weights[r.choice] ?? 0;
+    });
+    const engagement = total > 0 ? scoreSum / total : 0;
+
+    const labels = {
+      all: "All of my work",
+      most: "Most of my work",
+      some: "Some of my work",
+      none: "None of my work",
+    };
+
+    let summaryText = `Exit poll results - ${currentClassName}\n\n`;
+    summaryText += `Total responses: ${total}\n`;
+    summaryText += `Overall engagement: ${(engagement * 100).toFixed(1)}%\n\n`;
+    summaryText += "Breakdown:\n";
+
+    ["all", "most", "some", "none"].forEach((key) => {
+      const count = counts[key];
+      const pct =
+        total > 0 ? ((count / total) * 100).toFixed(1) + "%" : "0%";
+      summaryText += `- ${labels[key]}: ${count} (${pct})\n`;
+    });
+
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      alert("Clipboard not available in this browser. Please copy manually.");
+      console.log(summaryText);
+      return;
+    }
+
+    navigator.clipboard.writeText(summaryText)
+      .then(() => {
+        alert("Summary copied to clipboard. Open your email and paste (Ctrl+V).");
+      })
+      .catch(() => {
+        alert("Unable to copy automatically. Please copy from the console.");
+        console.log(summaryText);
+      });
+  });
 
     if (!currentTeacherEmail) {
       alert(
